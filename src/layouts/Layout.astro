@@ -1,0 +1,77 @@
+---
+interface Props {
+	title?: string;
+	description?: string;
+}
+
+const {
+	title = 'Tip Calculator',
+	description = 'Use this tip calculator to work out a tip, total bill, and split in seconds.',
+} = Astro.props;
+const canonicalUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" href="/favicon.ico" />
+		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+		<meta name="generator" content={Astro.generator} />
+		<meta name="description" content={description} />
+		<meta name="robots" content="index, follow" />
+		<link rel="canonical" href={canonicalUrl} />
+		<meta property="og:type" content="website" />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		{Astro.site && <meta property="og:url" content={canonicalUrl} />}
+		<meta name="twitter:card" content="summary" />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
+		<title>{title}</title>
+		<slot name="head" />
+		<script is:inline>
+			(() => {
+				try {
+					const saved = localStorage.getItem('tip-calculator-theme');
+					document.documentElement.dataset.theme = saved === 'light' ? 'light' : 'dark';
+				} catch {
+					document.documentElement.dataset.theme = 'dark';
+				}
+			})();
+		</script>
+	</head>
+	<body>
+		<header class="site-header">
+        	<a class="brand" href="/">Tip Calculator</a>
+        	<nav aria-label="Main navigation">
+        		<a href="/how-much-to-tip">How much to tip</a>
+        		<a href="/tip-guide">Tip guide</a>
+        		<a href="/tip-by-country">By country</a>
+        		<a href="/faq">FAQ</a>
+        	</nav>
+        </header><slot />
+		<footer class="site-footer"><div><a class="brand" href="/">Tip Calculator</a><p>Clear calculations and practical tipping guidance.</p></div><nav aria-label="Footer navigation"><a href="/about">About</a><a href="/contact">Contact</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></nav></footer>
+
+	</body>
+</html>
+
+<style>
+	html,
+	body {
+		margin: 0;
+		width: 100%;
+		min-height: 100%;
+		background: #111827;
+	}
+	:global(*) { box-sizing:border-box; }
+	:global(:root) { --ink:#e7edf8; --muted:#aebbd0; --page:#111827; --page-glow:#172e53; --surface:#182235; --surface-2:#202d42; --line:#33435d; --accent:#77a8ff; --accent-strong:#4f87f5; color-scheme:dark; }
+	:global(:root[data-theme='light']) { --ink:#172033; --muted:#5c697e; --page:#f8fafc; --page-glow:#e0edff; --surface:#fff; --surface-2:#f6f9fd; --line:#d6dee9; --accent:#2563eb; --accent-strong:#2563eb; color-scheme:light; }
+	:global(body){font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:radial-gradient(circle at 0 0,var(--page-glow),transparent 32rem),var(--page)}
+	.site-header,.site-footer{width:min(100% - 32px,1100px);margin:auto;display:flex;align-items:center;justify-content:space-between;gap:20px}.site-header{padding:18px 0;border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent)}.site-header nav,.site-footer nav{display:flex;flex-wrap:wrap;gap:16px}.site-header a,.site-footer a{color:var(--muted);font-size:.84rem;font-weight:700;text-decoration:none}.site-header a:hover,.site-footer a:hover{color:var(--ink)}.site-header .brand,.site-footer .brand{color:var(--ink);font-size:1rem}.site-theme{padding:7px 10px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);font:inherit;font-size:.75rem;font-weight:750;cursor:pointer}.site-footer{margin-top:48px;padding:28px 0 34px;border-top:1px solid color-mix(in srgb,var(--line) 60%,transparent);align-items:flex-start}.site-footer p{margin:7px 0 0;color:var(--muted);font-size:.78rem}.site-footer nav{justify-content:flex-end}
+	@media(max-width:650px){.site-header{align-items:flex-start;flex-direction:column}.site-header nav{gap:10px 14px}.site-footer{flex-direction:column}.site-footer nav{justify-content:flex-start}}
+</style>

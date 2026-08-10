@@ -1,0 +1,8 @@
+---
+interface Props { title: string; intro: string; eyebrow?: string; }
+const { title, intro, eyebrow = 'Tip Calculator guide' } = Astro.props;
+---
+<main class="content-shell"><article class="content-card"><p class="eyebrow">{eyebrow}</p><h1>{title}</h1><p class="intro">{intro}</p><div class="content-body"><slot /></div></article></main>
+<style>
+ .content-shell{width:min(100% - 32px,900px);margin:0 auto;padding:52px 0 0}.content-card{padding:clamp(24px,5vw,48px);border:1px solid var(--line);border-radius:24px;background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.16)}.eyebrow{margin:0 0 10px;color:var(--accent);font-size:.75rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase}.content-card h1{margin:0;color:var(--ink);font-size:clamp(2rem,7vw,3.5rem);line-height:1.05;letter-spacing:-.055em}.intro{max-width:680px;margin:16px 0 0;color:var(--muted);font-size:1.08rem;line-height:1.65}.content-body{margin-top:32px;color:var(--muted);line-height:1.7}.content-body h2{margin:32px 0 10px;color:var(--ink);font-size:1.45rem;line-height:1.2}.content-body h3{margin:24px 0 7px;color:var(--ink);font-size:1.05rem}.content-body p{margin:0 0 14px}.content-body ul{padding-left:1.2rem}.content-body a{color:var(--accent)}.content-body table{width:100%;border-collapse:collapse;margin:18px 0;font-size:.9rem}.content-body th,.content-body td{padding:11px;border-bottom:1px solid var(--line);text-align:left}.content-body th{color:var(--ink)}.content-body details{margin:10px 0;padding:0 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2)}.content-body summary{padding:13px 0;color:var(--ink);font-weight:750;cursor:pointer}.content-body details p{padding-bottom:12px}
+</style>

@@ -1,0 +1,16 @@
+---
+import TipCalculator from '../components/TipCalculator.astro';
+import Layout from '../layouts/Layout.astro';
+import TippingWorld from '../components/TippingWorld.astro';
+---
+
+<Layout title="Tip Calculator | Calculate tips, totals & splits" description="A fast tip calculator for restaurant bills: choose a tip percentage, split the bill, round up, and copy the result.">
+	<Fragment slot="head"><script type="application/ld+json" set:html={JSON.stringify({'@context':'https://schema.org','@type':'FAQPage',mainEntity:[{'@type':'Question',name:'Is 20% tip in the USA?',acceptedAnswer:{'@type':'Answer',text:'A 20% tip is a common choice for good full-service restaurant service in the United States. The right amount can vary with service, local practice, and whether a service charge is already included.'}},{'@type':'Question',name:'What is a 20% tip on $50?',acceptedAnswer:{'@type':'Answer',text:'A 20% tip on $50 is $10, for a $60 total before any other charges.'}},{'@type':'Question',name:'Should you tip before or after tax?',acceptedAnswer:{'@type':'Answer',text:'Both practices are used. Tipping on the pre-tax subtotal is common because it reflects the cost of the meal or service; tipping on the total is also a simple and generous approach.'}}]})} /></Fragment>
+	<TipCalculator />
+	<section class="home-links" aria-labelledby="learn-title"><p class="eyebrow">More than a calculation</p><h2 id="learn-title">Learn how tipping works</h2><p>Short, practical guides help you choose an amount with context.</p><div class="link-grid"><a href="/how-much-to-tip"><strong>How much should you tip?</strong><span>Common situations and service context.</span></a><a href="/tip-guide"><strong>Tip guide</strong><span>Percentages, splitting, tax, and rounding.</span></a><a href="/tip-by-country"><strong>Tipping by country</strong><span>International guidance is being researched.</span></a><a href="/faq"><strong>Tip calculator FAQ</strong><span>Answers to common questions.</span></a></div></section>
+	<TippingWorld />
+</Layout>
+
+<style>
+	.home-links{width:min(100% - 32px,880px);margin:34px auto 0;padding:24px;border:1px solid var(--line);border-radius:20px;background:var(--surface)}.eyebrow{margin:0 0 8px;color:var(--accent);font-size:.75rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase}.home-links h2{margin:0;color:var(--ink);font-size:1.5rem;letter-spacing:-.035em}.home-links>p:not(.eyebrow){margin:9px 0 18px;color:var(--muted);line-height:1.5}.link-grid{display:grid;gap:9px}.link-grid a{display:flex;flex-direction:column;gap:4px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);color:var(--ink);text-decoration:none}.link-grid a:hover{border-color:var(--accent)}.link-grid span{color:var(--muted);font-size:.82rem}@media(min-width:700px){.link-grid{grid-template-columns:repeat(2,1fr)}}
+</style>

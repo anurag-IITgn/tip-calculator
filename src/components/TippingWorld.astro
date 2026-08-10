@@ -1,0 +1,668 @@
+---
+const countries = [
+  { id: 'us', name: 'United States', category: 'expected', label: '15–20% is a common restaurant range', guidance: 'For table service, a gratuity is generally expected unless a service charge has already been added. Check the bill before adding more.' },
+  { id: 'ca', name: 'Canada', category: 'expected', label: 'About 15–20% for table service', guidance: 'Restaurant tipping is common. Check whether gratuity has already been included before adding more.' },
+  { id: 'mx', name: 'Mexico', category: 'expected', label: 'Around 10–15% is commonly used', guidance: 'A tip is customary in many sit-down restaurants. Service charges and local expectations can vary.' },
+  { id: 'br', name: 'Brazil', category: 'included', label: 'Look for a 10% service charge', guidance: 'Restaurants often add a 10% service charge to the bill. Check the bill before deciding whether to leave anything extra.' },
+  { id: 'gb', name: 'United Kingdom', category: 'included', label: 'Check first for a service charge', guidance: 'Many restaurants add a discretionary service charge. If it is already on the bill, an additional tip is optional.' },
+  { id: 'fr', name: 'France', category: 'included', label: 'Service is normally built into prices', guidance: 'Service is generally included in restaurant prices. Leaving a little extra for attentive service is optional.' },
+  { id: 'it', name: 'Italy', category: 'included', label: 'A cover or service charge may appear', guidance: 'Check for coperto or servizio on the bill. Leaving a little extra is optional.' },
+  { id: 'in', name: 'India', category: 'customary', label: 'Check for service charge; small tips are common', guidance: 'Restaurants may add a service charge. Where one is not included, a modest tip for good service is often appreciated.' },
+  { id: 'ae', name: 'United Arab Emirates', category: 'customary', label: 'Check the bill; extra is discretionary', guidance: 'A service charge may already be included. An additional tip is generally discretionary.' },
+  { id: 'jp', name: 'Japan', category: 'unusual', label: 'Tipping is generally not customary', guidance: 'At restaurants and taxis, tipping is generally not expected. Polite service is normally part of the experience.' },
+  { id: 'au', name: 'Australia', category: 'unusual', label: 'Tipping is optional, not expected', guidance: 'Tipping is not a standard obligation. A tip may be left for exceptional service.' },
+  { id: 'za', name: 'South Africa', category: 'customary', label: 'About 10–15% is commonly used', guidance: 'A tip is customary for restaurant table service. Check whether gratuity has already been included.' },
+];
+
+const categoryLabels = {
+  expected: 'Usually expected',
+  customary: 'Often appreciated',
+  included: 'Check the bill',
+  unusual: 'Generally unusual',
+};
+---
+
+<section class="world-tipping" aria-labelledby="world-title">
+  <div class="world-intro">
+    <div>
+      <p class="eyebrow">AROUND THE WORLD</p>
+      <h2 id="world-title">Tipping looks different everywhere.</h2>
+      <p class="intro-copy">
+        There is no universal tipping rule. Explore common restaurant customs around the
+        world, then always check your bill for a service charge.
+      </p>
+    </div>
+    <div class="map-hint"><span class="hint-dot"></span> Hover or select a country</div>
+  </div>
+
+  <div class="world-layout">
+    <div class="map-panel">
+      <div class="map-toolbar">
+        <div class="map-key" aria-label="Map legend">
+          <span><i class="expected"></i> Usually expected</span>
+          <span><i class="customary"></i> Often appreciated</span>
+          <span><i class="included"></i> Check the bill</span>
+          <span><i class="unusual"></i> Generally unusual</span>
+        </div>
+        <span class="map-caption">Restaurant tipping customs</span>
+      </div>
+
+      <div class="map-wrap" data-map-wrap>
+        <div class="map-loading" data-map-loading>
+          <span></span>
+          Loading world map
+        </div>
+      </div>
+    </div>
+
+    <aside class="country-card" data-country-card aria-live="polite">
+      <div class="card-topline">
+        <span class="category-dot expected" data-card-dot></span>
+        <p class="card-kicker" data-card-category>Usually expected</p>
+      </div>
+      <h3 data-card-name>United States</h3>
+      <p class="card-tip" data-card-tip>15–20% is a common restaurant range</p>
+      <p class="card-guidance" data-card-guidance>
+        For table service, a gratuity is generally expected unless a service charge has already
+        been added. Check the bill before adding more.
+      </p>
+      <div class="card-rule"></div>
+      <p class="card-meta"><span>Tip culture</span><strong data-card-short>Common</strong></p>
+    </aside>
+  </div>
+
+  <div class="country-guidance" aria-label="Country tipping guidance">
+    {countries.map((country) => (
+      <article class={`country-entry ${country.category}`} data-country-entry={country.id}>
+        <span class={`dot ${country.category}`}></span>
+        <div>
+          <h3>{country.name}</h3>
+          <p class="entry-label">{country.label}</p>
+          <p>{country.guidance}</p>
+        </div>
+        <button type="button" data-entry-select={country.id}>View on map <span aria-hidden="true">→</span></button>
+      </article>
+    ))}
+  </div>
+
+  <p class="world-note">
+    These are broad restaurant norms, not rules. Local practice and the bill itself should always take priority.
+  </p>
+</section>
+
+<script define:vars={{ countries }}>
+  const countryData = Object.fromEntries(countries.map((country) => [country.id, country]));
+  const categoryLabels = {
+    expected: 'Usually expected',
+    customary: 'Often appreciated',
+    included: 'Check the bill',
+    unusual: 'Generally unusual',
+  };
+  const categoryShort = {
+    expected: 'Common',
+    customary: 'Appreciated',
+    included: 'Check bill',
+    unusual: 'Unusual',
+  };
+
+  const mapWrap = document.querySelector('[data-map-wrap]');
+  const card = document.querySelector('[data-country-card]');
+  const loading = document.querySelector('[data-map-loading]');
+
+  function updateCard(id) {
+    const country = countryData[id];
+    if (!country || !card) return;
+
+    document.querySelectorAll('[data-map-country].is-active').forEach((el) => {
+      el.classList.remove('is-active');
+    });
+
+    document.querySelectorAll(`[data-map-country="${id}"]`).forEach((el) => {
+      el.classList.add('is-active');
+    });
+
+    const dot = card.querySelector('[data-card-dot]');
+    const category = card.querySelector('[data-card-category]');
+    const name = card.querySelector('[data-card-name]');
+    const tip = card.querySelector('[data-card-tip]');
+    const guidance = card.querySelector('[data-card-guidance]');
+    const short = card.querySelector('[data-card-short]');
+
+    if (dot) dot.className = `category-dot ${country.category}`;
+    if (category) category.textContent = categoryLabels[country.category];
+    if (name) name.textContent = country.name;
+    if (tip) tip.textContent = country.label;
+    if (guidance) guidance.textContent = country.guidance;
+    if (short) short.textContent = categoryShort[country.category];
+  }
+
+  async function loadMap() {
+    if (!mapWrap) return;
+
+    try {
+      const response = await fetch('/world-map.svg');
+      if (!response.ok) throw new Error('Map could not be loaded.');
+
+      const svgText = await response.text();
+      const parsed = new DOMParser().parseFromString(svgText, 'image/svg+xml');
+      const sourceSvg = parsed.documentElement;
+
+      if (!sourceSvg || sourceSvg.nodeName.toLowerCase() !== 'svg') {
+        throw new Error('Invalid SVG map.');
+      }
+
+      sourceSvg.removeAttribute('width');
+      sourceSvg.removeAttribute('height');
+      sourceSvg.setAttribute('class', 'world-map');
+      sourceSvg.setAttribute('role', 'img');
+      sourceSvg.setAttribute('aria-label', 'Interactive world map showing restaurant tipping customs');
+      sourceSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
+      mapWrap.replaceChildren(sourceSvg);
+
+      const ids = new Set(countries.map((country) => country.id));
+
+      // The downloaded map uses ISO-2 country ids (us, ca, gb, fr, etc.),
+      // but some SVG maps put the id on a <g> instead of directly on a <path>.
+      // Support both forms so the coloring remains reliable.
+      sourceSvg.querySelectorAll('[id]').forEach((element) => {
+        const id = element.getAttribute('id')?.toLowerCase();
+        if (!id || !ids.has(id)) return;
+
+        const country = countryData[id];
+        const shapes = element.matches('path, polygon, rect')
+          ? [element]
+          : [...element.querySelectorAll('path, polygon, rect')];
+
+        shapes.forEach((shape) => {
+          shape.dataset.mapCountry = id;
+          shape.classList.add('map-country', `category-${country.category}`);
+          shape.setAttribute('tabindex', '0');
+          shape.setAttribute('role', 'button');
+          shape.setAttribute('aria-label', country.name);
+
+          shape.addEventListener('pointerenter', () => updateCard(id));
+          shape.addEventListener('focus', () => updateCard(id));
+          shape.addEventListener('click', () => updateCard(id));
+          shape.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              updateCard(id);
+            }
+          });
+        });
+      });
+
+      // Keep the initial state deterministic rather than depending on mouse position.
+      updateCard('us');
+    } catch (error) {
+      console.error(error);
+      mapWrap.innerHTML = '<div class="map-error">The world map could not be loaded. The country guide below is still available.</div>';
+    }
+  }
+
+  document.querySelectorAll('[data-entry-select]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const id = button.dataset.entrySelect;
+      if (!id) return;
+      updateCard(id);
+      document.querySelector(`[data-map-country="${id}"]`)?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'center',
+      });
+    });
+  });
+
+  loadMap();
+</script>
+
+<style>
+  .world-tipping {
+    width: min(100% - 32px, 1100px);
+    margin: 48px auto 0;
+    padding: clamp(24px, 4vw, 40px);
+    border: 1px solid var(--line);
+    border-radius: 28px;
+    background:
+      radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 32%),
+      var(--surface);
+    overflow: hidden;
+  }
+
+  .world-intro {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    align-items: flex-end;
+  }
+
+  .eyebrow,
+  .card-kicker {
+    margin: 0;
+    color: var(--accent);
+    font-size: .72rem;
+    font-weight: 850;
+    letter-spacing: .11em;
+    text-transform: uppercase;
+  }
+
+  .world-intro h2 {
+    margin: 7px 0 0;
+    color: var(--ink);
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    line-height: .98;
+    letter-spacing: -.055em;
+  }
+
+  .intro-copy {
+    max-width: 640px;
+    margin: 13px 0 0;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+
+  .map-hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 3px;
+    color: var(--muted);
+    font-size: .76rem;
+    font-weight: 750;
+    white-space: nowrap;
+  }
+
+  .hint-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 13%, transparent);
+  }
+
+  .world-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) minmax(255px, .72fr);
+    gap: 14px;
+    margin-top: 26px;
+  }
+
+  .map-panel,
+  .country-card {
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+
+  .map-panel {
+    min-width: 0;
+    background: #0a1220;
+    box-shadow: inset 0 0 50px rgba(80, 130, 255, .035);
+  }
+
+  .map-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    min-height: 48px;
+    padding: 0 15px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    background: rgba(255,255,255,.018);
+  }
+
+  .map-key {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 13px;
+    color: #aeb9ca;
+    font-size: .68rem;
+    font-weight: 700;
+  }
+
+  .map-key span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+
+  .map-key i,
+  .dot,
+  .category-dot {
+    display: inline-block;
+    border-radius: 50%;
+  }
+
+  .map-key i {
+    width: 7px;
+    height: 7px;
+  }
+
+  .map-caption {
+    color: #718096;
+    font-size: .65rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .expected { --map-color: #ef9568; }
+  .customary { --map-color: #e5bd4d; }
+  .included { --map-color: #69b9a4; }
+  .unusual { --map-color: #719bea; }
+
+  .map-key .expected { background: #ef9568; }
+  .map-key .customary { background: #e5bd4d; }
+  .map-key .included { background: #69b9a4; }
+  .map-key .unusual { background: #719bea; }
+
+  .map-wrap {
+    position: relative;
+    min-height: 360px;
+    padding: 18px;
+    background:
+      radial-gradient(ellipse at 50% 48%, rgba(49, 91, 150, .16), transparent 64%),
+      linear-gradient(180deg, #0b1525, #09111e);
+  }
+
+  .map-wrap::before {
+    content: "";
+    position: absolute;
+    inset: 14px;
+    border: 1px solid rgba(133, 159, 197, .07);
+    border-radius: 13px;
+    pointer-events: none;
+  }
+
+  .world-map {
+    display: block;
+    width: 100%;
+    height: 360px;
+    overflow: visible;
+  }
+
+  :global(.world-map path) {
+    vector-effect: non-scaling-stroke;
+  }
+
+  :global(.world-map path[id]) {
+    fill: #26354a !important;
+    stroke: #35475f !important;
+    stroke-width: .65;
+    transition: fill .16s ease, filter .16s ease, opacity .16s ease;
+  }
+
+  :global(.world-map path[id]:hover) {
+    filter: brightness(1.22);
+  }
+
+  :global(.world-map .category-expected) {
+    fill: #ef9568 !important;
+    stroke: #ffb18a !important;
+  }
+
+  :global(.world-map .category-customary) {
+    fill: #e5bd4d !important;
+    stroke: #f2d878 !important;
+  }
+
+  :global(.world-map .category-included) {
+    fill: #69b9a4 !important;
+    stroke: #91d5c1 !important;
+  }
+
+  :global(.world-map .category-unusual) {
+    fill: #719bea !important;
+    stroke: #a4bcf1 !important;
+  }
+
+  .world-map :global(.is-active) {
+    filter: brightness(1.28) drop-shadow(0 0 7px rgba(255,255,255,.16));
+    stroke: #fff;
+    stroke-width: 1.25;
+  }
+
+  :global(.world-map path[tabindex]) {
+    cursor: pointer;
+  }
+
+  :global(.world-map path[tabindex]:focus-visible) {
+    outline: none;
+    filter: brightness(1.3);
+    stroke: #fff;
+    stroke-width: 1.4;
+  }
+
+  .map-loading,
+  .map-error {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    gap: 10px;
+    color: #8d9bb0;
+    font-size: .78rem;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .map-loading span {
+    width: 18px;
+    height: 18px;
+    margin: auto;
+    border: 2px solid rgba(255,255,255,.14);
+    border-top-color: #719bea;
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+  }
+
+  .map-error {
+    padding: 30px;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .country-card {
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    background:
+      linear-gradient(145deg, color-mix(in srgb, var(--accent) 8%, var(--surface-2)), var(--surface-2) 58%);
+  }
+
+  .card-topline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .category-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--map-color);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--map-color) 12%, transparent);
+  }
+
+  .country-card h3 {
+    margin: 10px 0 0;
+    color: var(--ink);
+    font-size: 1.45rem;
+    letter-spacing: -.035em;
+  }
+
+  .card-tip {
+    display: inline-flex;
+    width: fit-content;
+    margin: 12px 0 0;
+    padding: 7px 9px;
+    border: 1px solid color-mix(in srgb, var(--accent) 14%, var(--line));
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+    color: var(--ink);
+    font-size: .72rem;
+    font-weight: 800;
+  }
+
+  .card-guidance {
+    margin: 15px 0 0;
+    color: var(--muted);
+    font-size: .86rem;
+    line-height: 1.62;
+  }
+
+  .card-rule {
+    height: 1px;
+    margin: auto 0 15px;
+    background: var(--line);
+  }
+
+  .card-meta {
+    display: flex;
+    justify-content: space-between;
+    margin: 0;
+    color: var(--muted);
+    font-size: .72rem;
+  }
+
+  .card-meta strong {
+    color: var(--ink);
+  }
+
+  .country-guidance {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 9px;
+    margin-top: 14px;
+  }
+
+  .country-entry {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 11px;
+    align-items: start;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--surface-2);
+    scroll-margin: 20px;
+  }
+
+  .dot {
+    width: 7px;
+    height: 7px;
+    margin-top: 6px;
+    background: var(--map-color);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--map-color) 12%, transparent);
+  }
+
+  .country-entry h3 {
+    margin: 0;
+    color: var(--ink);
+    font-size: .9rem;
+  }
+
+  .country-entry p {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: .77rem;
+    line-height: 1.45;
+  }
+
+  .country-entry .entry-label {
+    color: var(--ink);
+    font-weight: 750;
+  }
+
+  .country-entry button {
+    align-self: center;
+    padding: 7px 9px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--accent);
+    font: inherit;
+    font-size: .68rem;
+    font-weight: 800;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .country-entry button:hover {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 7%, var(--surface));
+  }
+
+  .world-note {
+    margin: 15px 0 0;
+    color: var(--muted);
+    font-size: .75rem;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 849px) {
+    .world-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .country-card {
+      min-height: 220px;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .world-tipping {
+      width: min(100% - 24px, 1100px);
+      padding: 20px;
+      border-radius: 21px;
+    }
+
+    .world-intro {
+      display: block;
+    }
+
+    .map-hint {
+      margin-top: 13px;
+    }
+
+    .map-toolbar {
+      align-items: flex-start;
+      flex-direction: column;
+      padding: 12px 13px;
+    }
+
+    .map-wrap {
+      min-height: 245px;
+      padding: 8px;
+    }
+
+    .world-map {
+      height: 245px;
+    }
+
+    .country-guidance {
+      grid-template-columns: 1fr;
+    }
+
+    .country-entry {
+      grid-template-columns: auto 1fr;
+    }
+
+    .country-entry button {
+      grid-column: 2;
+      justify-self: start;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .world-map :global(path[id]) {
+      transition: none;
+    }
+
+    .map-loading span {
+      animation: none;
+    }
+  }
+</style>
