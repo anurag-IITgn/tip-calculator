@@ -1,5 +1,5 @@
-# Replace https://tipcalculator.com with the production domain before deployment.
+# Replace https://tipcalculatorlive.com with the production domain before deployment.
 User-agent: *
 Allow: /
 
-Sitemap: https://tipcalculator.com/sitemap.xml
+Sitemap: https://tipcalculatorlive.com/sitemap.xml

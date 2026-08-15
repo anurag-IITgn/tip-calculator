@@ -163,23 +163,38 @@ const categoryLabels = {
       const ids = new Set(countries.map((country) => country.id));
 
       // The downloaded map uses ISO-2 country ids (us, ca, gb, fr, etc.),
-      // but some SVG maps put the id on a <g> instead of directly on a <path>.
-      // Support both forms so the coloring remains reliable.
+      // supporting both direct <path id="..."> (in, br, ae, mx, za) and grouped <g id="..."> (us, ca, gb, fr, it, jp, au).
       sourceSvg.querySelectorAll('[id]').forEach((element) => {
         const id = element.getAttribute('id')?.toLowerCase();
         if (!id || !ids.has(id)) return;
 
         const country = countryData[id];
-        const shapes = element.matches('path, polygon, rect')
-          ? [element]
-          : [...element.querySelectorAll('path, polygon, rect')];
+        const tagName = (element.tagName || element.nodeName || '').toLowerCase();
+        const isDirectShape = ['path', 'polygon', 'rect', 'circle', 'ellipse'].includes(tagName);
+        const childShapes = Array.from(element.querySelectorAll('path, polygon, rect, circle, ellipse'));
+        const shapes = isDirectShape ? [element, ...childShapes] : childShapes;
+
+        if (shapes.length === 0) {
+          shapes.push(element);
+        }
+
+        element.classList.add('map-country', `category-${country.category}`);
+        element.dataset.mapCountry = id;
 
         shapes.forEach((shape) => {
           shape.dataset.mapCountry = id;
           shape.classList.add('map-country', `category-${country.category}`);
           shape.setAttribute('tabindex', '0');
           shape.setAttribute('role', 'button');
-          shape.setAttribute('aria-label', country.name);
+          shape.setAttribute('aria-label', `${country.name}: ${country.label}`);
+
+          // Remove any existing title and add rich tooltip title
+          const existingTitle = shape.querySelector('title');
+          if (existingTitle) existingTitle.remove();
+
+          const titleEl = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+          titleEl.textContent = `${country.name} — ${country.label} (${categoryLabels[country.category]})`;
+          shape.appendChild(titleEl);
 
           shape.addEventListener('pointerenter', () => updateCard(id));
           shape.addEventListener('focus', () => updateCard(id));
@@ -378,59 +393,114 @@ const categoryLabels = {
   .world-map {
     display: block;
     width: 100%;
-    height: 360px;
+    height: auto;
+    max-height: 420px;
+    aspect-ratio: 784 / 459;
     overflow: visible;
   }
 
-  :global(.world-map path) {
-    vector-effect: non-scaling-stroke;
-  }
-
-  :global(.world-map path[id]) {
-    fill: #26354a !important;
-    stroke: #35475f !important;
+  :global(.world-map path),
+  :global(.world-map polygon),
+  :global(.world-map rect) {
+    fill: #223044;
+    stroke: #344661;
     stroke-width: .65;
-    transition: fill .16s ease, filter .16s ease, opacity .16s ease;
+    vector-effect: non-scaling-stroke;
+    transition: fill .18s ease, stroke .18s ease, filter .18s ease;
   }
 
-  :global(.world-map path[id]:hover) {
-    filter: brightness(1.22);
+  :global(.world-map path:not(.map-country):hover),
+  :global(.world-map polygon:not(.map-country):hover),
+  :global(.world-map rect:not(.map-country):hover) {
+    filter: brightness(1.15);
   }
 
-  :global(.world-map .category-expected) {
-    fill: #ef9568 !important;
-    stroke: #ffb18a !important;
-  }
-
-  :global(.world-map .category-customary) {
-    fill: #e5bd4d !important;
-    stroke: #f2d878 !important;
-  }
-
-  :global(.world-map .category-included) {
-    fill: #69b9a4 !important;
-    stroke: #91d5c1 !important;
-  }
-
-  :global(.world-map .category-unusual) {
-    fill: #719bea !important;
-    stroke: #a4bcf1 !important;
-  }
-
-  .world-map :global(.is-active) {
-    filter: brightness(1.28) drop-shadow(0 0 7px rgba(255,255,255,.16));
-    stroke: #fff;
-    stroke-width: 1.25;
-  }
-
-  :global(.world-map path[tabindex]) {
+  :global(.world-map .map-country),
+  :global(.world-map [data-map-country]) {
     cursor: pointer;
   }
 
-  :global(.world-map path[tabindex]:focus-visible) {
+  /* Usually Expected (Orange): US, Canada, Mexico */
+  :global(.world-map .category-expected),
+  :global(.world-map [data-map-country].category-expected),
+  :global(.world-map path.category-expected),
+  :global(.world-map g.category-expected path),
+  :global(.world-map #us path),
+  :global(.world-map #ca path),
+  :global(.world-map #mx),
+  :global(.world-map [data-map-country="us"]),
+  :global(.world-map [data-map-country="ca"]),
+  :global(.world-map [data-map-country="mx"]) {
+    fill: #ef9568;
+    stroke: #ffb18a;
+  }
+
+  /* Often Appreciated (Gold): India, UAE, South Africa */
+  :global(.world-map .category-customary),
+  :global(.world-map [data-map-country].category-customary),
+  :global(.world-map path.category-customary),
+  :global(.world-map g.category-customary path),
+  :global(.world-map #in),
+  :global(.world-map #ae),
+  :global(.world-map #za),
+  :global(.world-map [data-map-country="in"]),
+  :global(.world-map [data-map-country="ae"]),
+  :global(.world-map [data-map-country="za"]) {
+    fill: #e5bd4d;
+    stroke: #f2d878;
+  }
+
+  /* Check the Bill (Teal/Mint): Brazil, UK, France, Italy */
+  :global(.world-map .category-included),
+  :global(.world-map [data-map-country].category-included),
+  :global(.world-map path.category-included),
+  :global(.world-map g.category-included path),
+  :global(.world-map #br),
+  :global(.world-map #gb path),
+  :global(.world-map #fr path),
+  :global(.world-map #it path),
+  :global(.world-map [data-map-country="br"]),
+  :global(.world-map [data-map-country="gb"]),
+  :global(.world-map [data-map-country="fr"]),
+  :global(.world-map [data-map-country="it"]) {
+    fill: #69b9a4;
+    stroke: #91d5c1;
+  }
+
+  /* Generally Unusual (Sky Blue): Japan, Australia */
+  :global(.world-map .category-unusual),
+  :global(.world-map [data-map-country].category-unusual),
+  :global(.world-map path.category-unusual),
+  :global(.world-map g.category-unusual path),
+  :global(.world-map #jp path),
+  :global(.world-map #au path),
+  :global(.world-map [data-map-country="jp"]),
+  :global(.world-map [data-map-country="au"]) {
+    fill: #719bea;
+    stroke: #a4bcf1;
+  }
+
+  :global(.world-map .map-country:hover),
+  :global(.world-map [data-map-country]:hover),
+  :global(.world-map #in:hover),
+  :global(.world-map #br:hover),
+  :global(.world-map #ae:hover),
+  :global(.world-map #mx:hover),
+  :global(.world-map #za:hover),
+  :global(.world-map g.map-country:hover path),
+  :global(.world-map .map-country:focus-visible),
+  :global(.world-map [data-map-country]:focus-visible) {
+    filter: brightness(1.24) drop-shadow(0 0 6px rgba(255,255,255,.3));
+    stroke: #ffffff;
+    stroke-width: 1.25;
     outline: none;
-    filter: brightness(1.3);
-    stroke: #fff;
+  }
+
+  .world-map :global(.map-country.is-active),
+  .world-map :global([data-map-country].is-active),
+  .world-map :global(g.is-active path) {
+    filter: brightness(1.3) drop-shadow(0 0 8px rgba(255,255,255,.4));
+    stroke: #ffffff;
     stroke-width: 1.4;
   }
 
@@ -657,7 +727,7 @@ const categoryLabels = {
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .world-map :global(path[id]) {
+    .world-map :global(path) {
       transition: none;
     }
 
